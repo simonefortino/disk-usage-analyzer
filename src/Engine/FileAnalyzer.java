@@ -1,5 +1,7 @@
 package Engine;
 import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,13 +11,15 @@ import java.util.Scanner;
 
 public class FileAnalyzer {
     private long filesVisited;
-    private long totalSize;
+    private long usedSpace;
     private long filesNotVIsited;
+    private long totalSpace;
 
     public FileAnalyzer() {
         filesVisited = 0;
         filesNotVIsited = 0;
-        totalSize = 0;
+        usedSpace = 0;
+        totalSpace = 0;
     }
 
     public DiskAttributes Analyze(Path path) {
@@ -53,10 +57,10 @@ public class FileAnalyzer {
 
                     if(attrs.isRegularFile()) {
                         filesVisited++;
-                        totalSize += attrs.size();
+                        usedSpace += attrs.size();
 
                         // stampa dimensione e path di ogni file
-                        System.out.println(attrs.size() + "\t" + file.toString());
+                        //System.out.println(attrs.size() + "\t" + file.toString());
                     }
                     
 
@@ -74,6 +78,15 @@ public class FileAnalyzer {
                     return FileVisitResult.CONTINUE;
                 }
             });
+
+
+            // per ogni root directory (in linux solo "/") calcola la dimensione totale
+            for (Path root : FileSystems.getDefault().getRootDirectories()) {
+
+                FileStore store = Files.getFileStore(root); // rappresenta la partizione che monta la root
+                totalSpace = store.getTotalSpace();
+            }
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -81,6 +94,6 @@ public class FileAnalyzer {
 
         scanner.close();
 
-        return new DiskAttributes(filesVisited, totalSize, filesNotVIsited);
+        return new DiskAttributes(filesVisited, filesNotVIsited, usedSpace, totalSpace);
     }
 }
