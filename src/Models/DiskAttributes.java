@@ -1,4 +1,4 @@
-package Engine;
+package Models;
 
 public record DiskAttributes(long filesVisited, long filesNotVisited, long usedSpace, long totalSpace ) {
     public void printAttributes () {

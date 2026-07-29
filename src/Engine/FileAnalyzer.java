@@ -9,6 +9,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Scanner;
 
+import Models.DiskAttributes;
+
 public class FileAnalyzer {
     private long filesVisited;
     private long usedSpace;

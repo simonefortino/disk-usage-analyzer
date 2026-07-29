@@ -1,12 +1,8 @@
-import java.io.IOException;
-import java.nio.file.FileStore;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import Engine.DiskAttributes;
 import Engine.FileAnalyzer;
+import Models.DiskAttributes;
 
 /**
  * Main
@@ -21,9 +17,5 @@ public class Main {
         analisysResult = analyzer.Analyze(path);
 
         analisysResult.printAttributes();
-
-        
-
-        
     }
 }
