@@ -6,11 +6,26 @@ namespace DiskUsageAnalyzer
     {
         public static void Main(string[] args)
         {
-            string path = "/home/simone";
+            string path = "/";
             long totalFileSizeInBytes = 0;
             long fileVisitedCount = 0;
 
-            
+            //path = AnsiConsole.Ask<string>("Type the [OrangeRed1]directory[/] to analyze: ");
+
+
+
+
+            // cartelle di sistema da escludere
+            string[] excludedDirectories = 
+            {
+                "/proc",
+                "/sys",
+                "/dev",
+                "/run",
+                "/mnt",
+                "/media",
+                "/lost+found"
+            };
 
             try
             {
@@ -21,18 +36,36 @@ namespace DiskUsageAnalyzer
                 Console.WriteLine($"Directory: {path}");
                 
                 DirectoryInfo dirInfo = new DirectoryInfo(path);
-                var files = dirInfo.EnumerateFiles("*", SearchOption.AllDirectories);
 
                 AnsiConsole.Status().Start(
                     "Analyzing subdirecotries...",
                     ctx =>
                     {
-                        // per ogni file lo conta e somma la dimensione a quella totale
-                        foreach (FileInfo file in files)
+
+                        DirectoryInfo rootDir = new DirectoryInfo("/");
+
+                        foreach (DirectoryInfo dir in rootDir.EnumerateDirectories())
                         {
-                            totalFileSizeInBytes += file.Length; 
-                            fileVisitedCount++;
+
+                            string fullPath = dir.FullName.ToLowerInvariant();
+
+                            // se è una cartella di sistema viene esclusa
+                            if (Array.Exists(excludedDirectories, ex => fullPath.StartsWith(ex)))
+                            {
+                                
+                                //Console.WriteLine($"Ignored system directory: [yellow]{dir.Name}[/]");
+                                continue;
+                            }
+
+                            ctx.Status($"Reading directory: [green]{dir.Name}[/]");
+
+                            var drive = new DriveInfo(dir.FullName);
+
+                            // ! legge circa 7GB di troppo
+                            // ! da risolvere
+                            ScanDirectory(dir, ref totalFileSizeInBytes, ref fileVisitedCount, ctx);
                         }
+
 
                         AnsiConsole.Markup("[green]Operation completed[/]\n");
                     }
@@ -41,12 +74,54 @@ namespace DiskUsageAnalyzer
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex);
             }
 
             Console.WriteLine(totalFileSizeInBytes);
             Console.WriteLine(fileVisitedCount);
         }
+
+
+        // si passano i riferimenti (ref) alle variabili che si volgiono modificare
+        static void ScanDirectory(DirectoryInfo dir, ref long totalBytes, ref long totalFiles, StatusContext ctx)
+        {
+            // opzioni per l'enumerazione dei file
+            var options = new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                IgnoreInaccessible = true,
+                AttributesToSkip = FileAttributes.ReparsePoint // Ignora symlinks
+            };
+
+            try
+            {
+                // ottiene l'enumeratore nel quale ci si può muovere manualmente con MoveNext()
+                using var enumerator = dir.EnumerateFiles("*", options).GetEnumerator();
+
+                while (true)
+                {
+                    try
+                    {
+                        // se l'enumaeratore non riesce a muoversi al prossimo elemento
+                        if (!enumerator.MoveNext())
+                            break;
+
+                        FileInfo file = enumerator.Current;
+                        totalBytes += file.Length;
+                        totalFiles++;
+                    }
+                    catch
+                    {
+                        // Cattura eccezioni sui singoli file (es. file cancellati al volo)
+                    }
+                }
+            }
+            catch
+            {
+                // Cattura eccezioni se l'intera cartella fallisce l'apertura dell'enumeratore
+            }
+        }
     }
+    
 }
 
