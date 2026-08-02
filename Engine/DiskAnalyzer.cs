@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DiskUsageAnalyzer.Models;
 using Spectre.Console;
 
@@ -10,13 +6,13 @@ namespace DiskUsageAnalyzer.Engine
 {
     public static class DiskAnalyzer
     {
-        private static long totalSizeInBytes = 0;
-        private static long totalFilesVisited = 0;
+        private static long _totalSizeInBytes = 0;
+        private static long _totalFilesVisited = 0;
 
-        private static DiskAttributes diskAttributes = new DiskAttributes();
+        private static DiskAttributes _diskAttributes = new DiskAttributes();
 
         // cartelle di sistema da escludere
-        private static string[] excludedDirectories = 
+        private static string[] _excludedDirectories = 
         {
             "/proc",
             "/sys",
@@ -26,7 +22,6 @@ namespace DiskUsageAnalyzer.Engine
             "/media",
             "/lost+found"
         };
-
 
         public static DiskAttributes Scan(string path)
         {
@@ -40,11 +35,11 @@ namespace DiskUsageAnalyzer.Engine
                 
                 DirectoryInfo dirInfo = new DirectoryInfo(path);
 
-                AnsiConsole.Status().Start(
+                AnsiConsole.Status()
+                    .Start(
                     "Analyzing subdirecotries...",
                     ctx =>
                     {
-
                         DirectoryInfo rootDir = new DirectoryInfo("/");
 
                         foreach (DirectoryInfo dir in rootDir.EnumerateDirectories())
@@ -53,20 +48,20 @@ namespace DiskUsageAnalyzer.Engine
                             string fullPath = dir.FullName.ToLowerInvariant();
 
                             // se è una cartella di sistema viene esclusa
-                            if (Array.Exists(excludedDirectories, ex => fullPath.StartsWith(ex)))
+                            if (Array.Exists(_excludedDirectories, ex => fullPath.StartsWith(ex)))
                             {
                                 
                                 //Console.WriteLine($"Ignored system directory: [yellow]{dir.Name}[/]");
                                 continue;
                             }
 
-                            ctx.Status($"Reading directory: [green]{dir.Name}[/]");
+                            ctx.Status($"Reading subdirectory: [green]{dir.Name}[/]");
 
                             var drive = new DriveInfo(dir.FullName);
 
                             // ! legge circa 7GB di troppo
                             // ! da risolvere
-                            ScanDirectory(dir, ref totalSizeInBytes, ref totalFilesVisited, ctx);
+                            ScanDirectory(dir, ref _totalSizeInBytes, ref _totalFilesVisited, ctx);
                         }
 
 
@@ -80,10 +75,10 @@ namespace DiskUsageAnalyzer.Engine
                 Console.WriteLine(ex);
             }
             
-            diskAttributes.TotalSizeOccupiedInBytes = totalSizeInBytes;
-            diskAttributes.TotalFilesVisited = totalFilesVisited;
+            _diskAttributes.TotalSizeOccupiedInBytes = _totalSizeInBytes;
+            _diskAttributes.TotalFilesVisited = _totalFilesVisited;
 
-            return diskAttributes;
+            return _diskAttributes;
         }
 
 
@@ -107,7 +102,7 @@ namespace DiskUsageAnalyzer.Engine
                 {
                     try
                     {
-                        // se l'enumaeratore non riesce a muoversi al prossimo elemento
+                        // se l'enumeratore non riesce a muoversi al prossimo elemento
                         if (!enumerator.MoveNext())
                             break;
 
@@ -115,16 +110,10 @@ namespace DiskUsageAnalyzer.Engine
                         totalBytes += file.Length;
                         totalFiles++;
                     }
-                    catch
-                    {
-                        // Cattura eccezioni sui singoli file (es. file cancellati al volo)
-                    }
+                    catch { /**/ }
                 }
             }
-            catch
-            {
-                // Cattura eccezioni se l'intera cartella fallisce l'apertura dell'enumeratore
-            }
+            catch { /**/ }
         }
 
         /*
