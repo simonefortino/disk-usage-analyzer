@@ -1,13 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+//test
 namespace DiskUsageAnalyzer.Models
 {
-    public class DiskAttributes(long bytesOccupied, long bytesTotal, long filesVisited)
+    public class DiskAttributes
     {
-        public long TotalSizeOccupiedInBytes { get; set; } = bytesOccupied;
-        public long TotalDiskSizeInBytes { get; set; } = bytesTotal;
-        public long TotalFilesVisited { get; set; } = filesVisited;
+        public long TotalSizeOccupiedInBytes { get; set; }
+        public long TotalDiskSizeInBytes { get; set; }
+        public long TotalFilesVisited { get; set; }
 
-        public DiskAttributes() : this(0, 0, 0)
-        {  
+        public DiskAttributes(long bytesOccupied, long bytesTotal, long filesVisited)
+        {
+            TotalSizeOccupiedInBytes = bytesOccupied;
+            TotalDiskSizeInBytes = bytesTotal;
+            TotalFilesVisited = filesVisited;
+        }
+
+        public DiskAttributes()
+        {
+            TotalSizeOccupiedInBytes = 0;
+            TotalDiskSizeInBytes = 0;
+            TotalFilesVisited = 0;
         }
     }
 }
