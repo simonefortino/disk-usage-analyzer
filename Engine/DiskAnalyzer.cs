@@ -37,7 +37,7 @@ namespace DiskUsageAnalyzer.Engine
 
                 AnsiConsole.Status()
                     .Start(
-                    "Analyzing subdirecotries...",
+                    "Analyzing subdirectories...",
                     ctx =>
                     {
                         DirectoryInfo rootDir = new DirectoryInfo("/");
@@ -59,8 +59,8 @@ namespace DiskUsageAnalyzer.Engine
 
                             var drive = new DriveInfo(dir.FullName);
 
-                            // ! legge circa 7GB di troppo
-                            // ! da risolvere
+                            // ! Legge circa 7GB di troppo
+                            // ! Da risolvere
                             ScanDirectory(dir, ref _totalSizeInBytes, ref _totalFilesVisited, ctx);
                         }
 
@@ -82,7 +82,7 @@ namespace DiskUsageAnalyzer.Engine
         }
 
 
-        // si passano i riferimenti (ref) alle variabili che si volgiono modificare
+        // si passano i riferimenti (ref) alle variabili che si volgono modificare
         private static void ScanDirectory(DirectoryInfo dir, ref long totalBytes, ref long totalFiles, StatusContext ctx)
         {
             // opzioni per l'enumerazione dei file
